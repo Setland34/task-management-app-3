@@ -56,3 +56,7 @@ The `jekyll-gh-pages.yml` workflow is responsible for building and deploying a J
 ### Mark stale issues and pull requests
 
 The `stale.yml` workflow is responsible for marking issues and pull requests as stale if they have had no activity for a specified amount of time. It runs on a schedule defined by a cron expression. The workflow consists of a single job: `stale`.
+
+### Build Docker images using buildctl
+
+The `docker-build.yml` workflow is responsible for building Docker images using `buildctl`. It runs on pushes to the `main` or `seed` branches, tags starting with "v", and pull requests. The workflow consists of a single job: `build`, which sets up the environment, builds the Docker image, and pushes it to a registry.
