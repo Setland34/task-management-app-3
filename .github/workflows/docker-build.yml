@@ -76,3 +76,11 @@ jobs:
             --output type=image,name=docker.io/username/image,push=true \
             --export-cache type=inline \
             --import-cache type=registry,ref=docker.io/username/image
+
+      - name: Output build result to local directory
+        run: |
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=local,dest=path/to/output-dir
