@@ -93,3 +93,19 @@ jobs:
             --local dockerfile=. \
             --opt target=testresult \
             --output type=local,dest=path/to/output-dir
+
+      - name: Output build result as tar file
+        run: |
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=tar,dest=out.tar
+
+      - name: Output build result as tar file (alternative)
+        run: |
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=tar > out.tar
