@@ -130,3 +130,7 @@ jobs:
       - name: Display disk usage information
         run: |
           buildctl du -v
+
+      - name: Clean up unused build cache
+        run: |
+          buildctl prune
