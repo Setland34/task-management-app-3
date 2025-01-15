@@ -1,0 +1,5 @@
+.licrc
+task-management-app/
+tasks.json
+*.DS_Store
+*.bak

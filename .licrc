@@ -1,0 +1,27 @@
+{
+  // The name of the project
+  "projectName": "Task Management Application",
+
+  // A brief description of the project
+  "description": "A web-based task management application with user authentication and task prioritization features.",
+
+  // The current version of the project
+  "version": "1.0.0",
+
+  // The URL to the full text of the license
+  "licenseUrl": "https://opensource.org/licenses/MIT",
+
+  // A list of contributors to the project
+  "contributors": [
+    "Setland34"
+  ],
+
+  // The license type for the project
+  "license": "MIT",
+
+  // The author of the project
+  "author": "Setland34",
+
+  // The repository URL for the project
+  "repository": "https://github.com/Setland34/task-management-app"
+}

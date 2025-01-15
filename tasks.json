@@ -1,0 +1,44 @@
+[
+    {
+        "id": 1,
+        "title": "Complete project proposal",
+        "description": "Write and submit the project proposal for the new client.",
+        "priority": "high",
+        "dueDate": "2023-05-01"
+    },
+    {
+        "id": 2,
+        "title": "Team meeting",
+        "description": "Discuss project milestones and deadlines with the team.",
+        "priority": "medium",
+        "dueDate": "2023-05-03"
+    },
+    {
+        "id": 3,
+        "title": "Code review",
+        "description": "Review the code submitted by the development team.",
+        "priority": "low",
+        "dueDate": "2023-05-05"
+    },
+    {
+        "id": 4,
+        "title": "Client presentation",
+        "description": "Prepare and present the project progress to the client.",
+        "priority": "high",
+        "dueDate": "2023-05-10"
+    },
+    {
+        "id": 5,
+        "title": "Update documentation",
+        "description": "Update the project documentation with the latest changes.",
+        "priority": "medium",
+        "dueDate": "2023-05-12"
+    },
+    {
+        "id": 6,
+        "title": "Bug fixing",
+        "description": "Fix the bugs reported by the QA team.",
+        "priority": "low",
+        "dueDate": "2023-05-15"
+    }
+]

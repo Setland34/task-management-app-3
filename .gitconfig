@@ -1,0 +1,17 @@
+[commit]
+    gpgsign = true
+
+[user]
+    name = Your Name
+    email = your.email@example.com
+    signingkey = <your-signing-key>
+
+[alias]
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    lg = log --oneline --graph --decorate --all
+
+# The 'commit.gpgsign' setting ensures that all commits are signed with a GPG key by default.
+# The 'user.signingkey' setting specifies the GPG key to be used for signing commits.
