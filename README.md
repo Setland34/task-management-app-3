@@ -46,3 +46,13 @@ The `git rebase -i HEAD~<number_of_commits>` command is used to interactively re
 
 ## Configuring Git to Sign All Commits with a GPG Key
 To configure Git to sign all commits with a GPG key by default, use the following command:
+
+## GitHub Actions Workflows
+
+### Deploy Jekyll with GitHub Pages
+
+The `jekyll-gh-pages.yml` workflow is responsible for building and deploying a Jekyll site to GitHub Pages. It runs on pushes targeting the default branch and can also be triggered manually from the Actions tab. The workflow consists of two jobs: `build` and `deploy`.
+
+### Mark stale issues and pull requests
+
+The `stale.yml` workflow is responsible for marking issues and pull requests as stale if they have had no activity for a specified amount of time. It runs on a schedule defined by a cron expression. The workflow consists of a single job: `stale`.

@@ -11,7 +11,7 @@ on:
 
 jobs:
   stale:
-
+    # This job runs on the latest version of Ubuntu
     runs-on: ubuntu-latest
     permissions:
       issues: write
