@@ -47,16 +47,87 @@ The `git rebase -i HEAD~<number_of_commits>` command is used to interactively re
 ## Configuring Git to Sign All Commits with a GPG Key
 To configure Git to sign all commits with a GPG key by default, use the following command:
 
-## GitHub Actions Workflows
+## Build Docker images using buildctl
 
-### Deploy Jekyll with GitHub Pages
+This section describes the purpose and functionality of the `docker-build.yml` workflow.
 
-The `jekyll-gh-pages.yml` workflow is responsible for building and deploying a Jekyll site to GitHub Pages. It runs on pushes targeting the default branch and can also be triggered manually from the Actions tab. The workflow consists of two jobs: `build` and `deploy`.
+The `docker-build.yml` workflow is a GitHub Actions workflow that builds Docker images using `buildctl`. It is triggered by pushes to the `main` or `seed` branches, as well as by the creation of tags starting with "v" and pull requests.
 
-### Mark stale issues and pull requests
+The workflow sets up the environment, builds the Docker image, and pushes it to a registry. It also includes steps to export and import cache for the Docker image build using `--export-cache type=gha` and `--import-cache type=gha`.
 
-The `stale.yml` workflow is responsible for marking issues and pull requests as stale if they have had no activity for a specified amount of time. It runs on a schedule defined by a cron expression. The workflow consists of a single job: `stale`.
+The following is an example of the `docker-build.yml` workflow:
 
-### Build Docker images using buildctl
+```yaml
+name: Build Docker Images
 
-The `docker-build.yml` workflow is responsible for building Docker images using `buildctl`. It runs on pushes to the `main` or `seed` branches, tags starting with "v", and pull requests. The workflow consists of a single job: `build`, which sets up the environment, builds the Docker image, and pushes it to a registry.
+on:
+  push:
+    branches:
+      - main
+      - seed
+    tags:
+      - v*
+  pull_request:
+
+env:
+  IMAGE_NAME: ghtoken_product_demo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true
+
+      - name: Export cache
+        run: |
+          buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true \
+            --export-cache type=gha
+
+      - name: Import cache
+        run: |
+          buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true \
+            --import-cache type=gha
+
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push Docker image
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          [ "$VERSION" == "main" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+```
