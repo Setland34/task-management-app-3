@@ -109,3 +109,11 @@ jobs:
             --local context=. \
             --local dockerfile=. \
             --output type=tar > out.tar
+
+      - name: Output build result as Docker image compatible with OCI spec
+        run: |
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=docker,name=myimage | docker load
