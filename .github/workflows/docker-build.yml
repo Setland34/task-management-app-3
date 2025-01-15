@@ -1,4 +1,4 @@
-name: Docker Build
+name: Build Docker Images
 
 on:
   push:
@@ -20,34 +20,48 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         run: |
           buildctl build \
-            --frontend=dockerfile.v0 \
+            --frontend dockerfile.v0 \
             --local context=. \
             --local dockerfile=. \
-            --opt target=foo \
-            --opt build-arg:foo=bar
+            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true
 
-      - name: Log in to GitHub Container Registry
+      - name: Export cache
+        run: |
+          buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true \
+            --export-cache type=gha
+
+      - name: Import cache
+        run: |
+          buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true \
+            --import-cache type=gha
+
+      - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push Docker image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
@@ -56,81 +70,3 @@ jobs:
           echo VERSION=$VERSION
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
-
-      - name: Build and push Docker image with multiple tags
-        run: |
-          buildctl build \
-            --frontend=dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --opt target=foo \
-            --opt build-arg:foo=bar \
-            --output type=image,\"name=docker.io/username/image,docker.io/username2/image2\",push=true
-
-      - name: Export and import cache for Docker image build
-        run: |
-          buildctl build \
-            --frontend=dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=image,name=docker.io/username/image,push=true \
-            --export-cache type=inline \
-            --import-cache type=registry,ref=docker.io/username/image
-
-      - name: Output build result to local directory
-        run: |
-          buildctl build \
-            --frontend=dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=local,dest=path/to/output-dir
-
-      - name: Build Docker image with target testresult and output to local directory
-        run: |
-          buildctl build \
-            --frontend=dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --opt target=testresult \
-            --output type=local,dest=path/to/output-dir
-
-      - name: Output build result as tar file
-        run: |
-          buildctl build \
-            --frontend=dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=tar,dest=out.tar
-
-      - name: Output build result as tar file (alternative)
-        run: |
-          buildctl build \
-            --frontend=dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=tar > out.tar
-
-      - name: Output build result as Docker image compatible with OCI spec
-        run: |
-          buildctl build \
-            --frontend=dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=docker,name=myimage | docker load
-
-      - name: List images in buildkit namespace
-        run: |
-          buildctl build \
-            --frontend=dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=image,name=docker.io/username/image
-          ctr --namespace=buildkit images ls
-
-      - name: Display disk usage information
-        run: |
-          buildctl du -v
-
-      - name: Clean up unused build cache
-        run: |
-          buildctl prune
