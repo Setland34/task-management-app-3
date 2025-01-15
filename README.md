@@ -49,85 +49,21 @@ To configure Git to sign all commits with a GPG key by default, use the followin
 
 ## Build Docker images using buildctl
 
-This section describes the purpose and functionality of the `docker-build.yml` workflow.
+The `docker-build.yml` workflow file is used to build Docker images using `buildctl`. This workflow is triggered on push events to the `main` or `seed` branches, as well as on the creation of tags starting with "v" and pull request events.
 
-The `docker-build.yml` workflow is a GitHub Actions workflow that builds Docker images using `buildctl`. It is triggered by pushes to the `main` or `seed` branches, as well as by the creation of tags starting with "v" and pull requests.
+The workflow includes the following steps:
 
-The workflow sets up the environment, builds the Docker image, and pushes it to a registry. It also includes steps to export and import cache for the Docker image build using `--export-cache type=gha` and `--import-cache type=gha`.
+1. Set up QEMU for multi-platform builds.
+2. Set up Docker Buildx.
+3. Checkout the repository.
+4. Build the Docker image using `buildctl`.
+5. Export the cache for the Docker image build.
+6. Import the cache for the Docker image build.
+7. Log in to the GitHub Container Registry.
+8. Push the Docker image to the registry.
 
-The following is an example of the `docker-build.yml` workflow:
+The `buildctl` command is used to build the Docker image with the specified frontend, context, dockerfile, and output type. The cache is exported and imported using the `--export-cache` and `--import-cache` options with the `gha` type.
 
-```yaml
-name: Build Docker Images
+The `buildctl` command can also be used to build the Docker image with multiple tags and push it to the registry. The `docker tag` and `docker push` commands are used to tag and push the image with the appropriate version.
 
-on:
-  push:
-    branches:
-      - main
-      - seed
-    tags:
-      - v*
-  pull_request:
-
-env:
-  IMAGE_NAME: ghtoken_product_demo
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-
-    steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: |
-          buildctl build \
-            --frontend dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true
-
-      - name: Export cache
-        run: |
-          buildctl build \
-            --frontend dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true \
-            --export-cache type=gha
-
-      - name: Import cache
-        run: |
-          buildctl build \
-            --frontend dockerfile.v0 \
-            --local context=. \
-            --local dockerfile=. \
-            --output type=image,name=docker.io/${{ github.repository_owner }}/$IMAGE_NAME,push=true \
-            --import-cache type=gha
-
-      - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Push Docker image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          [ "$VERSION" == "main" ] && VERSION=latest
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
-```
+The `etc/buildkit/buildkitd.toml` file is used to configure the buildkitd daemon settings. This file includes global settings for debug, trace, root, and insecure-entitlements, as well as specific sections for logging, DNS, gRPC, OTEL, build history, worker configurations, registry settings, and frontend control.
