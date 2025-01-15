@@ -84,3 +84,12 @@ jobs:
             --local context=. \
             --local dockerfile=. \
             --output type=local,dest=path/to/output-dir
+
+      - name: Build Docker image with target testresult and output to local directory
+        run: |
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --opt target=testresult \
+            --output type=local,dest=path/to/output-dir
