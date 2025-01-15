@@ -126,3 +126,7 @@ jobs:
             --local dockerfile=. \
             --output type=image,name=docker.io/username/image
           ctr --namespace=buildkit images ls
+
+      - name: Display disk usage information
+        run: |
+          buildctl du -v
