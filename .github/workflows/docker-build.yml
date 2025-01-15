@@ -117,3 +117,12 @@ jobs:
             --local context=. \
             --local dockerfile=. \
             --output type=docker,name=myimage | docker load
+
+      - name: List images in buildkit namespace
+        run: |
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=image,name=docker.io/username/image
+          ctr --namespace=buildkit images ls
