@@ -66,3 +66,13 @@ jobs:
             --opt target=foo \
             --opt build-arg:foo=bar \
             --output type=image,\"name=docker.io/username/image,docker.io/username2/image2\",push=true
+
+      - name: Export and import cache for Docker image build
+        run: |
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=image,name=docker.io/username/image,push=true \
+            --export-cache type=inline \
+            --import-cache type=registry,ref=docker.io/username/image
