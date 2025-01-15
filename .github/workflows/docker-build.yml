@@ -56,3 +56,13 @@ jobs:
           echo VERSION=$VERSION
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
+
+      - name: Build and push Docker image with multiple tags
+        run: |
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --local context=. \
+            --local dockerfile=. \
+            --opt target=foo \
+            --opt build-arg:foo=bar \
+            --output type=image,\"name=docker.io/username/image,docker.io/username2/image2\",push=true
